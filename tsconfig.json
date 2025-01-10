@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+      "module": "commonjs",
+      "target": "ES2020",
+      "outDir": "dist",
+      "sourceMap": true,
+      "strict": true,
+      "rootDir": "src",
+      "baseUrl": "./src",
+      "paths": {
+          "@shared/*": ["shared/*"]
+      }
+  },
+  "include": [
+      "src/extension/**/*",
+      "src/shared/**/*"
+  ],
+  "exclude": [
+      "node_modules",
+      "src/webview"
+  ]
+}

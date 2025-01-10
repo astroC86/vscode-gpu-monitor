@@ -1,0 +1,72 @@
+{
+    "name": "vscode-gpu-monitor",
+    "displayName": "GPU & Memory Monitor",
+    "description": "Real-time GPU and memory usage visualization",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.74.0"
+    },
+    "categories": [
+        "Visualization"
+    ],
+    "activationEvents": [
+        "onCommand:vscode-gpu-monitor.start"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "vscode-gpu-monitor.start",
+                "title": "Start GPU & Memory Monitor"
+            }
+        ],
+        "configuration": {
+            "title": "GPU Monitor",
+            "properties": {
+                "gpuMonitor.updateInterval": {
+                    "type": "number",
+                    "default": 5000,
+                    "description": "Update interval in milliseconds"
+                },
+                "gpuMonitor.gpuStatsPath": {
+                    "type": "string",
+                    "description": "Path to GPU statistics log file"
+                },
+                "gpuMonitor.memoryStatsPath": {
+                    "type": "string",
+                    "description": "Path to memory statistics log file"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run build",
+        "build": "webpack --mode production --config webpack.extension.config.js && webpack --mode production --config webpack.webview.config.js",
+        "watch": "webpack --mode development --watch --config webpack.extension.config.js & webpack --mode development --watch --config webpack.webview.config.js"
+    },
+    "devDependencies": {
+        "@types/node": "^16.11.7",
+        "@types/react": "^17.0.83",
+        "@types/react-dom": "^17.0.26",
+        "@types/recharts": "^1.8.29",
+        "@types/vscode": "^1.74.0",
+        "autoprefixer": "^10.4.20",
+        "css-loader": "^6.11.0",
+        "postcss": "^8.4.49",
+        "postcss-loader": "^6.2.1",
+        "style-loader": "^3.3.4",
+        "tailwindcss": "^3.4.17",
+        "ts-loader": "^9.5.1",
+        "typescript": "^4.9.5",
+        "webpack": "^5.97.1",
+        "webpack-cli": "^4.10.0"
+    },
+    "dependencies": {
+        "@types/vscode-webview": "^1.57.5",
+        "csv-parse": "^5.6.0",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "recharts": "^2.15.0",
+        "vscode-webview": "^1.0.1-beta.1"
+    }
+}

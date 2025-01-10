@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for charts */
+.recharts-default-tooltip {
+  @apply bg-white/90 border border-gray-200 shadow-lg;
+}
