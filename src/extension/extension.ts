@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { MonitorPanel } from './MonitorPanel';
-import { FileWatcher } from './FileWatcher';
 import { Logger } from '../shared/logger';
+import { TextDecoder } from 'util';
 
 export function activate(context: vscode.ExtensionContext) {
     Logger.init();
     Logger.log('Extension activating');
-    
-    let currentPanel: MonitorPanel | undefined = undefined;
-    let fileWatcher: FileWatcher | undefined = undefined;
 
+    let currentPanel: MonitorPanel | undefined = undefined;
+    const decoder = new TextDecoder('utf-8');
+    
     let disposable = vscode.commands.registerCommand('vscode-gpu-monitor.start', async () => {
         Logger.log('Start command executed');
         
@@ -27,50 +28,90 @@ export function activate(context: vscode.ExtensionContext) {
                 switch (message.command) {
                     case 'log':
                         if (message.level === 'error') {
-                            Logger.error(message.text, 'Webview');
+                            Logger.error(new Error(message.text), 'Webview');
                         } else {
                             Logger.log(message.text, 'Webview');
                         }
                         break;
                         
-                    case 'startMonitoring':
-                        Logger.log(`Starting monitoring with paths - GPU: ${message.gpuPath}, Memory: ${message.memoryPath}`);
-                        if (fileWatcher) {
-                            fileWatcher.dispose();
+                    case 'getInitialData': {
+                        Logger.log('getInitialData command received', 'Webview');
+                        try {
+                            const gpuData = await readFileContent(message.gpuPath);
+                            const memoryData = await readFileContent(message.memoryPath);
+                            currentPanel!.updateData({
+                                command: 'initialData',
+                                gpu: gpuData,
+                                memory: memoryData,
+                                gpuPath: message.gpuPath,
+                                memoryPath: message.memoryPath
+                            });
+                        } catch (error) {
+                            Logger.error(error as Error, 'Extension');
+                            vscode.window.showErrorMessage(`Failed to read initial data: ${(error as Error).message}`);
                         }
-                        fileWatcher = new FileWatcher(
-                            currentPanel!,
-                            message.gpuPath,
-                            message.memoryPath
-                        );
                         break;
+                    }
                         
-                    case 'stopMonitoring':
-                        Logger.log('Stopping monitoring');
-                        if (fileWatcher) {
-                            fileWatcher.dispose();
-                            fileWatcher = undefined;
+                    case 'getNewData': {
+                        try {
+                            const data = await readNewData(message.path, message.lastPosition);
+                            currentPanel!.updateData({
+                                command: 'update',
+                                type: message.type,
+                                data: data,
+                                lastPosition: message.lastPosition + data.length,
+                                path: message.path
+                            });
+                        } catch (error) {
+                            Logger.error(error as Error, 'Extension');
+                            vscode.window.showErrorMessage(`Failed to read new data from ${message.path}: ${(error as Error).message}`);
                         }
                         break;
+                    }
                         
                     case 'error':
-                        Logger.error(message.text, 'Webview');
-                        vscode.window.showErrorMessage(message.text);
+                        Logger.error(new Error(message.text), 'Webview');
+                        vscode.window.showErrorMessage(`Webview error: ${message.text}`);
                         break;
                 }
             },
             undefined,
             context.subscriptions
         );
-        
+
+        async function readFileContent(filePath: string): Promise<string> {
+            if (!fs.existsSync(filePath)) {
+                throw new Error(`File not found: ${filePath}`);
+            }
+            const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
+            return decoder.decode(fileContent);
+        }
+    
+        async function readNewData(filePath: string, lastPosition: number): Promise<string> {
+            if (!fs.existsSync(filePath)) {
+                throw new Error(`File not found: ${filePath}`);
+            }
+    
+            const stats = fs.statSync(filePath);
+            const currentSize = stats.size;
+    
+            if (currentSize <= lastPosition) {
+                return '';
+            }
+    
+            const file = fs.createReadStream(filePath, { start: lastPosition, encoding: 'utf8' });
+            let data = '';
+            for await (const chunk of file) {
+                data += chunk;
+            }
+            return data;
+        }
+
         currentPanel.panel.onDidDispose(
             () => {
                 Logger.log('Panel disposed');
                 currentPanel = undefined;
-                if (fileWatcher) {
-                    fileWatcher.dispose();
-                    fileWatcher = undefined;
-                }
             },
             null,
             context.subscriptions
@@ -91,4 +132,8 @@ export function activate(context: vscode.ExtensionContext) {
     });
     
     Logger.log('Extension activated');
+}
+
+// This method is called when your extension is deactivated
+export function deactivate() {
 }

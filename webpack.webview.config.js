@@ -52,7 +52,8 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
-      '@shared': path.resolve(__dirname, 'src/shared')
+      '@shared': path.resolve(__dirname, 'src/shared'),
+      'papaparse': path.resolve(__dirname, 'node_modules/papaparse/papaparse.min.js')
     }
   },
   externals: {
