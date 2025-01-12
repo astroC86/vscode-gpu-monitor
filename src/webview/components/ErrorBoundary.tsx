@@ -1,13 +1,12 @@
-// src/webview/components/ErrorBoundary.tsx
 import React from 'react';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean; error: Error | null }
+  { hasError: boolean; error: Error | null; errorInfo: React.ErrorInfo | null }
 > {
-  constructor(props: { children: React.ReactNode }) {
+  constructor(props: any) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error: Error) {
@@ -16,6 +15,7 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('React error boundary caught error:', error, errorInfo);
+    this.setState({ hasError: true, error, errorInfo });
   }
 
   render() {
@@ -25,6 +25,7 @@ class ErrorBoundary extends React.Component<
           <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
           <pre className="text-sm overflow-auto">
             {this.state.error?.toString()}
+            {this.state.errorInfo?.componentStack}
           </pre>
         </div>
       );

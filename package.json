@@ -46,6 +46,7 @@
     },
     "devDependencies": {
         "@types/node": "^16.11.7",
+        "@types/papaparse": "^5.3.15",
         "@types/react": "^17.0.83",
         "@types/react-dom": "^17.0.26",
         "@types/recharts": "^1.8.29",
@@ -64,6 +65,7 @@
     "dependencies": {
         "@types/vscode-webview": "^1.57.5",
         "csv-parse": "^5.6.0",
+        "papaparse": "^5.5.1",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "recharts": "^2.15.0",

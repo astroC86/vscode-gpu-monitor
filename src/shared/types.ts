@@ -12,11 +12,21 @@ export interface GPUData {
   }
   
   export interface VSCodeMessage {
-    command: 'update' | 'clear';
+    command: 'update' | 'clear' | 'initialData' | 'getInitialData' | 'getNewData' | 'error';
     type?: 'gpu' | 'memory';
     data?: GPUData | MemoryData;
+    gpu?: string;
+    memory?: string;
+    gpuPath?: string;
+    memoryPath?: string;
+    lastPosition?: number;
+    path?: string;
+    text?: string;
+    gpuLastPosition?: number;
+    memoryLastPosition?: number;
+    message?: string;
   }
-  
+       
   declare global {
     interface Window {
       acquireVsCodeApi(): {
